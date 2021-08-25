@@ -27,8 +27,37 @@
   }
 }
 
+.related_project {
+  summary {
+    margin-bottom: 8px;
+  }
+
+  dl {
+    dt {
+      display: inline;
+    }
+
+    dt::after {
+      content: ':'
+    }
+
+    dd {
+      display: inline;
+    }
+  }
+}
+
 .project [data-controller="pdf-import"] {
   margin-bottom: 20px;
+}
+
+.project {
+  td.no-overflow {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 200px;
+  }
 }
 
 #projects-panel [data-controller="pdf-import"] {

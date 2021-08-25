@@ -172,36 +172,7 @@ class ProjectCoreTest < ActionDispatch::IntegrationTest
     assert_equal dashboard_projects_path, current_path
   end
 
-  test 'should be able to see linked projects' do
-    project = projects(:one)
-    parent  = projects(:test_application)
-    child   = projects(:dummy_project)
-
-    parent.update!(parent: nil, owner: @user)
-    project.update!(parent: parent, owner: @user)
-    child.update!(parent: project, owner: @user)
-
-    sign_in @user
-
-    visit project_path(project)
-
-    click_link('Related')
-
-    within('h4', text: parent.name) do
-      assert has_text?('parent')
-      assert has_link?(href: project_path(parent))
-    end
-
-    within('h4', text: project.name) do
-      assert has_text?('self')
-      assert has_link?(href: project_path(project))
-    end
-
-    within('h4', text: child.name) do
-      assert has_text?('child')
-      assert has_link?(href: project_path(child))
-    end
-  end
+  private
 
   def create_eoi
     eoi = Project.new(project_type: project_types(:eoi),

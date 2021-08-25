@@ -3035,6 +3035,40 @@ ALTER SEQUENCE public.project_datasets_id_seq OWNED BY public.project_datasets.i
 
 
 --
+-- Name: project_relationships; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_relationships (
+    id bigint NOT NULL,
+    left_project_id bigint NOT NULL,
+    right_project_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT chk_rails_b7cab0758f CHECK ((left_project_id <> right_project_id))
+);
+
+
+--
+-- Name: project_edges; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.project_edges AS
+ SELECT project_relationships.id AS project_relationship_id,
+    project_relationships.left_project_id AS project_id,
+    project_relationships.right_project_id AS related_project_id,
+    project_relationships.created_at,
+    project_relationships.updated_at
+   FROM public.project_relationships
+UNION
+ SELECT project_relationships.id AS project_relationship_id,
+    project_relationships.right_project_id AS project_id,
+    project_relationships.left_project_id AS related_project_id,
+    project_relationships.created_at,
+    project_relationships.updated_at
+   FROM public.project_relationships;
+
+
+--
 -- Name: project_end_uses; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3223,6 +3257,25 @@ CREATE SEQUENCE public.project_purposes_id_seq
 --
 
 ALTER SEQUENCE public.project_purposes_id_seq OWNED BY public.project_purposes.id;
+
+
+--
+-- Name: project_relationships_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_relationships_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_relationships_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_relationships_id_seq OWNED BY public.project_relationships.id;
 
 
 --
@@ -5035,6 +5088,13 @@ ALTER TABLE ONLY public.project_purposes ALTER COLUMN id SET DEFAULT nextval('pu
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY public.project_relationships ALTER COLUMN id SET DEFAULT nextval('public.project_relationships_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY public.project_roles ALTER COLUMN id SET DEFAULT nextval('public.project_roles_id_seq'::regclass);
 
 
@@ -5881,6 +5941,14 @@ ALTER TABLE ONLY public.project_outputs
 
 ALTER TABLE ONLY public.project_purposes
     ADD CONSTRAINT project_purposes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_relationships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_relationships
+    ADD CONSTRAINT project_relationships_pkey PRIMARY KEY (id);
 
 
 --
@@ -6731,6 +6799,27 @@ CREATE INDEX index_project_outputs_on_project_id ON public.project_outputs USING
 
 
 --
+-- Name: index_project_relationships_on_left_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_relationships_on_left_project_id ON public.project_relationships USING btree (left_project_id);
+
+
+--
+-- Name: index_project_relationships_on_left_project_id_right_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_project_relationships_on_left_project_id_right_project_id ON public.project_relationships USING btree ((LEAST(left_project_id, right_project_id)), (GREATEST(left_project_id, right_project_id)));
+
+
+--
+-- Name: index_project_relationships_on_right_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_relationships_on_right_project_id ON public.project_relationships USING btree (right_project_id);
+
+
+--
 -- Name: index_project_type_datasets_on_dataset_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -7286,6 +7375,14 @@ ALTER TABLE ONLY public.releases
 
 
 --
+-- Name: fk_rails_4d63e64586; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_relationships
+    ADD CONSTRAINT fk_rails_4d63e64586 FOREIGN KEY (right_project_id) REFERENCES public.projects(id);
+
+
+--
 -- Name: fk_rails_4db7b1360c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7467,6 +7564,14 @@ ALTER TABLE ONLY public.project_outputs
 
 ALTER TABLE ONLY public.organisations
     ADD CONSTRAINT fk_rails_7b7111c3a1 FOREIGN KEY (organisation_type_id) REFERENCES public.organisation_types(id);
+
+
+--
+-- Name: fk_rails_7dcc851597; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_relationships
+    ADD CONSTRAINT fk_rails_7dcc851597 FOREIGN KEY (left_project_id) REFERENCES public.projects(id);
 
 
 --
@@ -8322,6 +8427,9 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20210728140306'),
 ('20210728140310'),
 ('20210728140313'),
+('20210730080619'),
+('20210730103014'),
+('20210730115722'),
 ('20210811081605');
 
 

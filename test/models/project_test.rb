@@ -3,6 +3,21 @@ require 'test_helper'
 class ProjectTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
+  test 'has many project_edges' do
+    project = projects(:dummy_project)
+
+    assert Project.reflect_on_association(:project_edges)
+    assert_instance_of ProjectEdge, project.project_edges.first
+  end
+
+  test 'has many related projects' do
+    project = projects(:dummy_project)
+
+    assert Project.reflect_on_association(:related_projects)
+    assert_instance_of Project, project.related_projects.first
+    assert_includes project.related_projects, projects(:test_application)
+  end
+
   test 'should include HasManyReferers' do
     assert_includes ProjectAmendment.included_modules, HasManyReferers
   end
@@ -622,6 +637,16 @@ class ProjectTest < ActiveSupport::TestCase
     project = team.projects.build(project_type: project_types(:application))
     facade = PdfApplicationFacade.new(project)
     refute_includes facade.errors.messages.keys, :first_contact_date
+  end
+
+  test 'finds/returns relevant ProjectRelationship linking other project' do
+    project      = projects(:dummy_project)
+    related      = projects(:test_application)
+    relationship = project_relationships(:dummy_project_test_application)
+
+    assert_equal relationship, project.relationship_to(related)
+    assert_equal relationship, related.relationship_to(project)
+    assert_nil project.relationship_to(projects(:one))
   end
 
   private

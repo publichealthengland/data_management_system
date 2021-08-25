@@ -219,6 +219,9 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :related_projects, only: %i[index]
+      resources :project_relationships, only: %i[index create destroy], shallow: false
+
       collection do
         post :import, controller: 'projects/imports', action: :create
       end
